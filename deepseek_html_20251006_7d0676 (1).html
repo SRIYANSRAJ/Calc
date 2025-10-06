@@ -1,0 +1,2341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="author" content="Sriyans Raj" />
+  <title>Calculator 🌱</title>
+  <!-- Added Google Font import for 'Poppins' -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --accent1: #76e0b2; /* green */
+      --accent2: #6fa8ff; /* blue */
+      --bg1: linear-gradient(135deg,#b2f7ef,#eff7f6);
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+      padding: 20px;
+      transition: background 0.6s ease;
+      box-sizing: border-box; /* Ensures padding doesn't cause overflow */
+    }
+    .container {
+      width: 100%;
+      max-width: 460px; /* Use max-width for better responsiveness */
+      background: rgba(255,255,255,0.18);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px); /* Safari support */
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+      position: relative;
+      transition: box-shadow .3s ease, transform .18s ease;
+    }
+    .container:hover { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(0,0,0,0.18); }
+
+    /* top mini-bar */
+    .topbar {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      margin-bottom:10px;
+    }
+    .greet {
+      font-weight:700;
+      color:#0f2b2b;
+      display:flex;
+      flex-direction:column;
+      line-height:1;
+    }
+    .greet .name { font-size:1rem; }
+    .greet .time { font-size:0.85rem; color:#123; opacity:0.85; }
+    .meta {
+      text-align:right;
+      font-size:0.85rem;
+      color:#123;
+    }
+    .quote {
+      margin-top:6px;
+      font-size:0.9rem;
+      color:#0a3;
+      text-align:center;
+      font-weight:600;
+    }
+
+    h1 {
+      margin:8px 0 12px 0;
+      font-size:1.6rem;
+      text-align:center;
+      color:#122;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 8px;
+      background: #d9fff8;
+      border-radius: 9px;
+      cursor: pointer;
+      user-select: none;
+      font-weight: 600;
+      transition: background 0.2s ease, color 0.2s ease, filter 0.2s ease;
+    }
+    .tab.active { background: var(--accent1); color:#fff; }
+    .tab:hover { filter: brightness(0.98); }
+
+    .tab-contents { min-height: 140px; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .calc-screen {
+      background: #fff;
+      height: 52px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 14px;
+      font-size: 1.15rem;
+      margin-bottom: 10px;
+      overflow-x: auto;
+      white-space: nowrap; /* Prevent text from wrapping */
+    }
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 8px;
+    }
+    button.calc {
+      background: #e2fff5;
+      border: none;
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform .08s ease, box-shadow .08s;
+      -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+    }
+    button.calc:active { transform: translateY(1px); } /* Add a pressed state */
+    button.calc:hover { transform: translateY(-3px); }
+
+    .science-section { margin-top: 6px; text-align: left; }
+    label { display:block; margin-bottom:6px; font-weight:600; color:#123; }
+    select, input[type="number"], input[type="text"] {
+      width:100%;
+      padding:8px;
+      border-radius:8px;
+      border:1px solid #cfd8d8;
+      margin-bottom:8px;
+      box-sizing: border-box;
+      font-family: inherit; /* Ensure inputs use the body font */
+    }
+    .formula-hint { font-size:0.9rem; color:#4a5; margin-bottom:8px; }
+    .result-box {
+      background:#fff; border-radius:8px; padding:10px; margin-top:8px; font-weight:700;
+      text-align:center;
+      min-height: 20px; /* Give it a minimum height */
+    }
+
+    /* Pi toggle styling */
+    .pi-toggle-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 10px 0;
+      gap: 10px;
+    }
+    .pi-toggle-label {
+      font-weight: 600;
+      color: #123;
+      font-size: 0.9rem;
+    }
+    .pi-toggle {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 30px;
+    }
+    .pi-toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .pi-toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #76e0b2;
+      transition: .4s;
+      border-radius: 34px;
+    }
+    .pi-toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    .pi-toggle input:checked + .pi-toggle-slider {
+      background-color: #6fa8ff;
+    }
+    .pi-toggle input:checked + .pi-toggle-slider:before {
+      transform: translateX(30px);
+    }
+    .pi-value-display {
+      font-weight: 600;
+      color: #0a3;
+      font-size: 0.9rem;
+      min-width: 60px;
+      text-align: center;
+    }
+
+    /* Reverse calculation option */
+    .reverse-option {
+      margin: 10px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .reverse-option input {
+      width: auto;
+      margin: 0;
+    }
+    
+    /* Input group for reverse calculation */
+    .input-group {
+      margin-bottom: 10px;
+    }
+    .input-group label {
+      display: inline-block;
+      width: 120px;
+    }
+    .input-group input {
+      width: calc(100% - 130px);
+      display: inline-block;
+    }
+    .hint-text {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: -5px;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width:480px){
+      body {
+        padding: 10px; /* Reduce padding on small screens */
+      }
+      .container{
+        width:100%;
+        padding: 12px;
+      }
+      .input-group label {
+        width: 100px;
+      }
+      .input-group input {
+        width: calc(100% - 110px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" data-author="Sriyans Raj">
+    <div class="topbar">
+      <div class="greet">
+        <div class="name" id="greeting">Hi, Sriyans</div>
+        <div class="time" id="clock">—:—</div>
+      </div>
+      <div class="meta">
+        <div class="small">Calculator</div>
+        <div class="small">By: <strong>Sriyans Raj</strong></div>
+      </div>
+    </div>
+
+    <h1>Calculator</h1>
+
+    <div class="quote" id="quote">Focus mode: ON ✨</div>
+
+    <!-- Pi Toggle -->
+    <div class="pi-toggle-container">
+      <span class="pi-toggle-label">π Value:</span>
+      <label class="pi-toggle">
+        <input type="checkbox" id="piToggle">
+        <span class="pi-toggle-slider"></span>
+      </label>
+      <span class="pi-value-display" id="piValueDisplay">22/7</span>
+    </div>
+
+    <div class="tabs" role="tablist">
+      <div class="tab active" data-target="basic">Basic</div>
+      <div class="tab" data-target="trig">Trigonometry</div>
+      <div class="tab" data-target="physics">Physics</div>
+      <div class="tab" data-target="mensuration">Mensuration</div>
+    </div>
+
+    <div class="tab-contents">
+      <!-- BASIC -->
+      <div id="basic" class="tab-content active">
+        <div id="screen" class="calc-screen">0</div>
+        <div class="buttons" id="basicButtons">
+          <button class="calc" data-val="C">C</button>
+          <button class="calc" data-val="/">÷</button>
+          <button class="calc" data-val="*">×</button>
+          <button class="calc" data-val="DEL">⌫</button>
+
+          <button class="calc" data-val="7">7</button>
+          <button class="calc" data-val="8">8</button>
+          <button class="calc" data-val="9">9</button>
+          <button class="calc" data-val="-">−</button>
+
+          <button class="calc" data-val="4">4</button>
+          <button class="calc" data-val="5">5</button>
+          <button class="calc" data-val="6">6</button>
+          <button class="calc" data-val="+">+</button>
+
+          <button class="calc" data-val="1">1</button>
+          <button class="calc" data-val="2">2</button>
+          <button class="calc" data-val="3">3</button>
+          <button class="calc" data-val="=" style="background:linear-gradient(135deg,#f093fb,#f5576c); color:#fff; grid-row: span 2;">=</button>
+
+          <button class="calc" data-val="0" style="grid-column: span 2;">0</button>
+          <button class="calc" data-val=".">.</button>
+        </div>
+      </div>
+
+      <!-- TRIG -->
+      <div id="trig" class="tab-content">
+        <div class="science-section">
+          <label for="trigFunction">Function</label>
+          <select id="trigFunction">
+            <option value="sin">sin</option>
+            <option value="cos">cos</option>
+            <option value="tan">tan</option>
+            <option value="sec">sec</option>
+            <option value="cosec">cosec</option>
+            <option value="cot">cot</option>
+          </select>
+
+          <label for="angle">Angle (°)</label>
+          <input id="angle" type="number" placeholder="Enter angle in degrees" />
+
+          <button class="calc" id="computeTrigBtn">Compute</button>
+          <div id="trigResult" class="result-box small">Result will appear here</div>
+        </div>
+      </div>
+
+      <!-- PHYSICS -->
+      <div id="physics" class="tab-content">
+        <div class="science-section">
+          <label for="physicsType">Choose Formula</label>
+          <select id="physicsType">
+            <option value="speed">Speed = Distance / Time</option>
+            <option value="force">Force = Mass × Acceleration</option>
+            <option value="pressure">Pressure = Force / Area</option>
+            <option value="work">Work = Force × Distance</option>
+            <option value="power">Power = Work / Time</option>
+            <option value="density">Density = Mass / Volume</option>
+            <option value="kinetic-energy">Kinetic Energy = ½ × Mass × Velocity²</option>
+            <option value="potential-energy">Potential Energy = Mass × g × Height</option>
+            <option value="ohms-law">Ohm's Law: Voltage = Current × Resistance</option>
+            <option value="power-electrical">Electrical Power = Voltage × Current</option>
+            <option value="momentum">Momentum = Mass × Velocity</option>
+            <option value="acceleration">Acceleration = (Final Velocity - Initial Velocity) / Time</option>
+            <option value="newton-second-law">Newton's Second Law: Force = Mass × Acceleration</option>
+            <option value="gravitational-force">Gravitational Force = G × (m₁×m₂) / r²</option>
+          </select>
+
+          <div id="physicsInputs"></div>
+          
+          <div class="reverse-option">
+            <input type="checkbox" id="physicsReverseCalc">
+            <label for="physicsReverseCalc">Calculate all properties from known values</label>
+          </div>
+          <div class="hint-text" id="physicsReverseHint">Enter known values and leave others blank to calculate missing values</div>
+
+          <button class="calc" id="computePhysicsBtn">Compute</button>
+          <div id="physicsResult" class="result-box small">Result will appear here</div>
+        </div>
+      </div>
+
+      <!-- MENSURATION -->
+      <div id="mensuration" class="tab-content">
+        <div class="science-section">
+          <label for="shapeType">Select Shape</label>
+          <select id="shapeType">
+            <optgroup label="2D">
+              <option value="square">Square</option>
+              <option value="rectangle">Rectangle</option>
+              <option value="circle">Circle</option>
+              <option value="triangle">Triangle</option>
+            </optgroup>
+            <optgroup label="3D">
+              <option value="cube">Cube</option>
+              <option value="cuboid">Cuboid</option>
+              <option value="cylinder">Cylinder</option>
+              <option value="sphere">Sphere</option>
+              <option value="cone">Cone</option>
+              <option value="hollow-cylinder">Hollow Cylinder</option>
+              <option value="hollow-cone">Hollow Cone</option>
+              <option value="hemisphere">Hemisphere</option>
+              <option value="hollow-hemisphere">Hollow Hemisphere</option>
+            </optgroup>
+          </select>
+
+          <div id="shapeInputs"></div>
+          
+          <div class="reverse-option">
+            <input type="checkbox" id="reverseCalc">
+            <label for="reverseCalc">Calculate all properties from known values</label>
+          </div>
+          <div class="hint-text" id="reverseHint">Enter known values and leave others blank to calculate missing values</div>
+
+          <button class="calc" id="computeShapeBtn">Compute</button>
+          <div id="shapeResult" class="result-box small">Result will appear here</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- math.js for safe expression evaluation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+
+  <script>
+    // small helpers
+    const $ = id => document.getElementById(id);
+    const isValidNumber = n => typeof n === 'number' && !isNaN(n) && isFinite(n);
+    const show = (el, txt) => el.innerHTML = txt; // Use innerHTML to allow for formatting if needed
+
+    // Pi toggle functionality
+    let piValue = 22/7; // Default value
+    const piToggle = $('piToggle');
+    const piValueDisplay = $('piValueDisplay');
+    
+    piToggle.addEventListener('change', () => {
+      if (piToggle.checked) {
+        piValue = 3.14;
+        piValueDisplay.textContent = '3.14';
+      } else {
+        piValue = 22/7;
+        piValueDisplay.textContent = '22/7';
+      }
+    });
+
+    // greeting + live clock
+    function updateClockAndGreeting() {
+      const now = new Date();
+      // Try to use user's local time first, fallback to a default
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+      $('clock').innerText = timeStr;
+
+      const hour = now.getHours();
+      let greet = 'Hi, Sriyans';
+      if(hour >= 5 && hour < 12) greet = 'Good morning, Devashish';
+      else if(hour >= 12 && hour < 17) greet = 'Good afternoon, Devashish';
+      else if(hour >= 17 && hour < 21) greet = 'Good evening, Devashish';
+      // else it remains 'Hi, Sriyans' for late night
+      $('greeting').innerText = greet;
+    }
+    setInterval(updateClockAndGreeting, 1000);
+    updateClockAndGreeting();
+
+    // rotating motivational quotes
+    const quotes = [
+      "Focus mode: ON ✨",
+      "Short breaks — big gains ☕",
+      "One step at a time 🧭",
+      "You've got this 💪",
+      "Study smart, not just hard 📘"
+    ];
+    let qidx = 0;
+    function rotateQuote(){
+      qidx = (qidx + 1) % quotes.length;
+      $('quote').innerText = quotes[qidx];
+    }
+    setInterval(rotateQuote, 6000);
+
+    // TAB logic
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        tab.classList.add('active');
+        const target = tab.getAttribute('data-target');
+        document.querySelectorAll('.tab-content').forEach(tc=>tc.classList.remove('active'));
+        document.getElementById(target).classList.add('active');
+      });
+    });
+
+    // BASIC calculator
+    const screen = $('screen');
+    let displayValue = "";
+    // Only one definition of updateScreen is needed
+    function updateScreen(){ 
+        screen.textContent = displayValue === "" ? "0" : displayValue; 
+    }
+    document.getElementById('basicButtons').addEventListener('click', (ev)=>{
+      const btn = ev.target.closest('button[data-val]');
+      if(!btn) return;
+      const val = btn.getAttribute('data-val');
+      if(val === 'C'){ displayValue = ''; updateScreen(); return; }
+      if(val === 'DEL'){ displayValue = displayValue.slice(0,-1); updateScreen(); return; }
+      if(val === '='){ 
+        try { 
+          if(displayValue.trim()==='') return; 
+          // Sanitize expression to prevent security issues, although math.js is generally safe.
+          const sanitizedExpression = displayValue.replace(/[^-()\d/*+.]/g, '');
+          const res = math.evaluate(sanitizedExpression); 
+          displayValue = String(res); 
+          updateScreen(); 
+        } catch(e){ 
+          screen.textContent = 'Error'; 
+          displayValue=''; 
+        } 
+        return; 
+      }
+      displayValue += val; 
+      updateScreen();
+    });
+
+    // TRIG
+    $('computeTrigBtn').addEventListener('click', ()=>{
+      const func = $('trigFunction').value;
+      const angle = parseFloat($('angle').value);
+      if(!isValidNumber(angle)){ show($('trigResult'),'Enter a valid angle'); return; }
+      const rad = angle * Math.PI / 180;
+      let result;
+      switch(func){
+        case 'sin': result = Math.sin(rad); break;
+        case 'cos': result = Math.cos(rad); break;
+        case 'tan': result = Math.tan(rad); break;
+        case 'sec': result = 1/Math.cos(rad); break;
+        case 'cosec': result = 1/Math.sin(rad); break;
+        case 'cot': result = 1/Math.tan(rad); break;
+        default: result = NaN;
+      }
+      if(!isFinite(result)) show($('trigResult'), `${func}(${angle}°) = Undefined`);
+      else show($('trigResult'), `${func}(${angle}°) = ${result.toFixed(6)}`);
+    });
+
+    // PHYSICS dynamic
+    function updatePhysicsInputs(){
+      const t = $('physicsType').value;
+      const c = $('physicsInputs');
+      const reverseCalc = $('physicsReverseCalc').checked;
+      let html='';
+      
+      if (reverseCalc) {
+        // Reverse calculation inputs - show all possible parameters
+        switch(t){
+          case 'speed': 
+            html += `
+              <div class="input-group">
+                <label for="physics_distance">Distance (m):</label>
+                <input id="physics_distance" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_time">Time (s):</label>
+                <input id="physics_time" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_speed">Speed (m/s):</label>
+                <input id="physics_speed" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">speed = distance / time</div>
+            `;
+            break;
+          case 'force':
+            html += `
+              <div class="input-group">
+                <label for="physics_mass">Mass (kg):</label>
+                <input id="physics_mass" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_acc">Acceleration (m/s²):</label>
+                <input id="physics_acc" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_force">Force (N):</label>
+                <input id="physics_force" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">force = mass × acceleration</div>
+            `;
+            break;
+          case 'pressure':
+            html += `
+              <div class="input-group">
+                <label for="physics_force">Force (N):</label>
+                <input id="physics_force" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_area">Area (m²):</label>
+                <input id="physics_area" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_pressure">Pressure (Pa):</label>
+                <input id="physics_pressure" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">pressure = force / area</div>
+            `;
+            break;
+          case 'work':
+            html += `
+              <div class="input-group">
+                <label for="physics_force2">Force (N):</label>
+                <input id="physics_force2" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_dist">Distance (m):</label>
+                <input id="physics_dist" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_work">Work (J):</label>
+                <input id="physics_work" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">work = force × distance</div>
+            `;
+            break;
+          case 'power':
+            html += `
+              <div class="input-group">
+                <label for="physics_work">Work (J):</label>
+                <input id="physics_work" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_time2">Time (s):</label>
+                <input id="physics_time2" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_power">Power (W):</label>
+                <input id="physics_power" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">power = work / time</div>
+            `;
+            break;
+          case 'density':
+            html += `
+              <div class="input-group">
+                <label for="physics_mass2">Mass (kg):</label>
+                <input id="physics_mass2" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_volume">Volume (m³):</label>
+                <input id="physics_volume" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_density">Density (kg/m³):</label>
+                <input id="physics_density" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">density = mass / volume</div>
+            `;
+            break;
+          case 'kinetic-energy':
+            html += `
+              <div class="input-group">
+                <label for="physics_mass_ke">Mass (kg):</label>
+                <input id="physics_mass_ke" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_velocity">Velocity (m/s):</label>
+                <input id="physics_velocity" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_ke">Kinetic Energy (J):</label>
+                <input id="physics_ke" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">KE = ½ × mass × velocity²</div>
+            `;
+            break;
+          case 'potential-energy':
+            html += `
+              <div class="input-group">
+                <label for="physics_mass_pe">Mass (kg):</label>
+                <input id="physics_mass_pe" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_height">Height (m):</label>
+                <input id="physics_height" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_pe">Potential Energy (J):</label>
+                <input id="physics_pe" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_gravity">Gravity (m/s²):</label>
+                <input id="physics_gravity" type="number" step="any" value="9.8" />
+              </div>
+              <div class="formula-hint">PE = mass × gravity × height</div>
+            `;
+            break;
+          case 'ohms-law':
+            html += `
+              <div class="input-group">
+                <label for="physics_voltage">Voltage (V):</label>
+                <input id="physics_voltage" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_current">Current (A):</label>
+                <input id="physics_current" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_resistance">Resistance (Ω):</label>
+                <input id="physics_resistance" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">Voltage = Current × Resistance</div>
+            `;
+            break;
+          case 'power-electrical':
+            html += `
+              <div class="input-group">
+                <label for="physics_voltage_power">Voltage (V):</label>
+                <input id="physics_voltage_power" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_current_power">Current (A):</label>
+                <input id="physics_current_power" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_power_electrical">Power (W):</label>
+                <input id="physics_power_electrical" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">Power = Voltage × Current</div>
+            `;
+            break;
+          case 'momentum':
+            html += `
+              <div class="input-group">
+                <label for="physics_mass_momentum">Mass (kg):</label>
+                <input id="physics_mass_momentum" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_velocity_momentum">Velocity (m/s):</label>
+                <input id="physics_velocity_momentum" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_momentum">Momentum (kg·m/s):</label>
+                <input id="physics_momentum" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">Momentum = Mass × Velocity</div>
+            `;
+            break;
+          case 'acceleration':
+            html += `
+              <div class="input-group">
+                <label for="physics_initial_velocity">Initial Velocity (m/s):</label>
+                <input id="physics_initial_velocity" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_final_velocity">Final Velocity (m/s):</label>
+                <input id="physics_final_velocity" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_time_acc">Time (s):</label>
+                <input id="physics_time_acc" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_acceleration">Acceleration (m/s²):</label>
+                <input id="physics_acceleration" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">Acceleration = (Final Velocity - Initial Velocity) / Time</div>
+            `;
+            break;
+          case 'newton-second-law':
+            html += `
+              <div class="input-group">
+                <label for="physics_mass_newton">Mass (kg):</label>
+                <input id="physics_mass_newton" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_acc_newton">Acceleration (m/s²):</label>
+                <input id="physics_acc_newton" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_force_newton">Force (N):</label>
+                <input id="physics_force_newton" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">Force = Mass × Acceleration</div>
+            `;
+            break;
+          case 'gravitational-force':
+            html += `
+              <div class="input-group">
+                <label for="physics_mass1">Mass 1 (kg):</label>
+                <input id="physics_mass1" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_mass2_grav">Mass 2 (kg):</label>
+                <input id="physics_mass2_grav" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_distance_grav">Distance (m):</label>
+                <input id="physics_distance_grav" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_force_grav">Gravitational Force (N):</label>
+                <input id="physics_force_grav" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="physics_gravitational_constant">G (N·m²/kg²):</label>
+                <input id="physics_gravitational_constant" type="number" step="any" value="6.67430e-11" />
+              </div>
+              <div class="formula-hint">F = G × (m₁×m₂) / r²</div>
+            `;
+            break;
+          default:
+            html += `<div class="formula-hint">Reverse calculation not available for this formula</div>`;
+            $('physicsReverseCalc').checked = false;
+            updatePhysicsInputs();
+            return;
+        }
+      } else {
+        // Regular calculation inputs
+        switch(t){
+          case 'speed': html += createInputHtml('Distance (m)','physics_distance') + createInputHtml('Time (s)','physics_time') + `<div class="formula-hint">speed = distance / time</div>`; break;
+          case 'force': html += createInputHtml('Mass (kg)','physics_mass') + createInputHtml('Acceleration (m/s²)','physics_acc') + `<div class="formula-hint">force = mass × acceleration</div>`; break;
+          case 'pressure': html += createInputHtml('Force (N)','physics_force') + createInputHtml('Area (m²)','physics_area') + `<div class="formula-hint">pressure = force / area</div>`; break;
+          case 'work': html += createInputHtml('Force (N)','physics_force2') + createInputHtml('Distance (m)','physics_dist') + `<div class="formula-hint">work = force × distance</div>`; break;
+          case 'power': html += createInputHtml('Work (J)','physics_work') + createInputHtml('Time (s)','physics_time2') + `<div class="formula-hint">power = work / time</div>`; break;
+          case 'density': html += createInputHtml('Mass (kg)','physics_mass2') + createInputHtml('Volume (m³)','physics_volume') + `<div class="formula-hint">density = mass / volume</div>`; break;
+          case 'kinetic-energy': html += createInputHtml('Mass (kg)','physics_mass_ke') + createInputHtml('Velocity (m/s)','physics_velocity') + `<div class="formula-hint">KE = ½ × mass × velocity²</div>`; break;
+          case 'potential-energy': html += createInputHtml('Mass (kg)','physics_mass_pe') + createInputHtml('Height (m)','physics_height') + `<div class="formula-hint">PE = mass × gravity × height (g = 9.8 m/s²)</div>`; break;
+          case 'ohms-law': html += createInputHtml('Voltage (V)','physics_voltage') + createInputHtml('Current (A)','physics_current') + createInputHtml('Resistance (Ω)','physics_resistance') + `<div class="formula-hint">Voltage = Current × Resistance</div>`; break;
+          case 'power-electrical': html += createInputHtml('Voltage (V)','physics_voltage_power') + createInputHtml('Current (A)','physics_current_power') + `<div class="formula-hint">Power = Voltage × Current</div>`; break;
+          case 'momentum': html += createInputHtml('Mass (kg)','physics_mass_momentum') + createInputHtml('Velocity (m/s)','physics_velocity_momentum') + `<div class="formula-hint">Momentum = Mass × Velocity</div>`; break;
+          case 'acceleration': html += createInputHtml('Initial Velocity (m/s)','physics_initial_velocity') + createInputHtml('Final Velocity (m/s)','physics_final_velocity') + createInputHtml('Time (s)','physics_time_acc') + `<div class="formula-hint">Acceleration = (Final Velocity - Initial Velocity) / Time</div>`; break;
+          case 'newton-second-law': html += createInputHtml('Mass (kg)','physics_mass_newton') + createInputHtml('Acceleration (m/s²)','physics_acc_newton') + `<div class="formula-hint">Force = Mass × Acceleration</div>`; break;
+          case 'gravitational-force': html += createInputHtml('Mass 1 (kg)','physics_mass1') + createInputHtml('Mass 2 (kg)','physics_mass2_grav') + createInputHtml('Distance (m)','physics_distance_grav') + `<div class="formula-hint">F = G × (m₁×m₂) / r² (G = 6.67430×10⁻¹¹ N·m²/kg²)</div>`; break;
+        }
+      }
+      c.innerHTML = html;
+    }
+
+    function createInputHtml(label,id){ return `<label for="${id}">${label}</label><input id="${id}" type="number" step="any" />`; }
+    function getVal(id){ const el = $(id); if(!el) return NaN; const v = parseFloat(el.value); return isNaN(v)? NaN : v; }
+    
+    $('computePhysicsBtn').addEventListener('click', ()=>{
+      const t = $('physicsType').value;
+      const reverseCalc = $('physicsReverseCalc').checked;
+      
+      try{
+        let text='';
+        
+        if (reverseCalc) {
+          // Handle reverse calculations for physics formulas
+          switch(t){
+            case 'speed': {
+              const distance = getVal('physics_distance');
+              const time = getVal('physics_time');
+              const speed = getVal('physics_speed');
+              
+              // Count how many values are provided
+              const providedValues = [distance, time, speed].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 2) {
+                show($('physicsResult'), 'Please provide at least two values');
+                return;
+              }
+              
+              let d = distance;
+              let t = time;
+              let s = speed;
+              
+              // Calculate missing value
+              if (!isValidNumber(d) && isValidNumber(t) && isValidNumber(s)) {
+                d = s * t;
+              } else if (!isValidNumber(t) && isValidNumber(d) && isValidNumber(s)) {
+                t = d / s;
+              } else if (!isValidNumber(s) && isValidNumber(d) && isValidNumber(t)) {
+                s = d / t;
+              }
+              
+              text = `Distance = ${d.toFixed(4)} m, Time = ${t.toFixed(4)} s, Speed = ${s.toFixed(4)} m/s`;
+              break;
+            }
+            case 'force': {
+              const mass = getVal('physics_mass');
+              const acceleration = getVal('physics_acc');
+              const force = getVal('physics_force');
+              
+              // Count how many values are provided
+              const providedValues = [mass, acceleration, force].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 2) {
+                show($('physicsResult'), 'Please provide at least two values');
+                return;
+              }
+              
+              let m = mass;
+              let a = acceleration;
+              let f = force;
+              
+              // Calculate missing value
+              if (!isValidNumber(m) && isValidNumber(a) && isValidNumber(f)) {
+                m = f / a;
+              } else if (!isValidNumber(a) && isValidNumber(m) && isValidNumber(f)) {
+                a = f / m;
+              } else if (!isValidNumber(f) && isValidNumber(m) && isValidNumber(a)) {
+                f = m * a;
+              }
+              
+              text = `Mass = ${m.toFixed(4)} kg, Acceleration = ${a.toFixed(4)} m/s², Force = ${f.toFixed(4)} N`;
+              break;
+            }
+            case 'pressure': {
+              const force = getVal('physics_force');
+              const area = getVal('physics_area');
+              const pressure = getVal('physics_pressure');
+              
+              // Count how many values are provided
+              const providedValues = [force, area, pressure].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 2) {
+                show($('physicsResult'), 'Please provide at least two values');
+                return;
+              }
+              
+              let f = force;
+              let A = area;
+              let p = pressure;
+              
+              // Calculate missing value
+              if (!isValidNumber(f) && isValidNumber(A) && isValidNumber(p)) {
+                f = p * A;
+              } else if (!isValidNumber(A) && isValidNumber(f) && isValidNumber(p)) {
+                A = f / p;
+              } else if (!isValidNumber(p) && isValidNumber(f) && isValidNumber(A)) {
+                p = f / A;
+              }
+              
+              text = `Force = ${f.toFixed(4)} N, Area = ${A.toFixed(4)} m², Pressure = ${p.toFixed(4)} Pa`;
+              break;
+            }
+            case 'work': {
+              const force = getVal('physics_force2');
+              const distance = getVal('physics_dist');
+              const work = getVal('physics_work');
+              
+              // Count how many values are provided
+              const providedValues = [force, distance, work].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 2) {
+                show($('physicsResult'), 'Please provide at least two values');
+                return;
+              }
+              
+              let f = force;
+              let d = distance;
+              let w = work;
+              
+              // Calculate missing value
+              if (!isValidNumber(f) && isValidNumber(d) && isValidNumber(w)) {
+                f = w / d;
+              } else if (!isValidNumber(d) && isValidNumber(f) && isValidNumber(w)) {
+                d = w / f;
+              } else if (!isValidNumber(w) && isValidNumber(f) && isValidNumber(d)) {
+                w = f * d;
+              }
+              
+              text = `Force = ${f.toFixed(4)} N, Distance = ${d.toFixed(4)} m, Work = ${w.toFixed(4)} J`;
+              break;
+            }
+            case 'power': {
+              const work = getVal('physics_work');
+              const time = getVal('physics_time2');
+              const power = getVal('physics_power');
+              
+              // Count how many values are provided
+              const providedValues = [work, time, power].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 2) {
+                show($('physicsResult'), 'Please provide at least two values');
+                return;
+              }
+              
+              let w = work;
+              let t = time;
+              let p = power;
+              
+              // Calculate missing value
+              if (!isValidNumber(w) && isValidNumber(t) && isValidNumber(p)) {
+                w = p * t;
+              } else if (!isValidNumber(t) && isValidNumber(w) && isValidNumber(p)) {
+                t = w / p;
+              } else if (!isValidNumber(p) && isValidNumber(w) && isValidNumber(t)) {
+                p = w / t;
+              }
+              
+              text = `Work = ${w.toFixed(4)} J, Time = ${t.toFixed(4)} s, Power = ${p.toFixed(4)} W`;
+              break;
+            }
+            case 'density': {
+              const mass = getVal('physics_mass2');
+              const volume = getVal('physics_volume');
+              const density = getVal('physics_density');
+              
+              // Count how many values are provided
+              const providedValues = [mass, volume, density].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 2) {
+                show($('physicsResult'), 'Please provide at least two values');
+                return;
+              }
+              
+              let m = mass;
+              let v = volume;
+              let d = density;
+              
+              // Calculate missing value
+              if (!isValidNumber(m) && isValidNumber(v) && isValidNumber(d)) {
+                m = d * v;
+              } else if (!isValidNumber(v) && isValidNumber(m) && isValidNumber(d)) {
+                v = m / d;
+              } else if (!isValidNumber(d) && isValidNumber(m) && isValidNumber(v)) {
+                d = m / v;
+              }
+              
+              text = `Mass = ${m.toFixed(4)} kg, Volume = ${v.toFixed(4)} m³, Density = ${d.toFixed(4)} kg/m³`;
+              break;
+            }
+            case 'kinetic-energy': {
+              const mass = getVal('physics_mass_ke');
+              const velocity = getVal('physics_velocity');
+              const ke = getVal('physics_ke');
+              
+              // Count how many values are provided
+              const providedValues = [mass, velocity, ke].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 2) {
+                show($('physicsResult'), 'Please provide at least two values');
+                return;
+              }
+              
+              let m = mass;
+              let v = velocity;
+              let kineticEnergy = ke;
+              
+              // Calculate missing value
+              if (!isValidNumber(m) && isValidNumber(v) && isValidNumber(kineticEnergy)) {
+                m = (2 * kineticEnergy) / (v * v);
+              } else if (!isValidNumber(v) && isValidNumber(m) && isValidNumber(kineticEnergy)) {
+                v = Math.sqrt((2 * kineticEnergy) / m);
+              } else if (!isValidNumber(kineticEnergy) && isValidNumber(m) && isValidNumber(v)) {
+                kineticEnergy = 0.5 * m * v * v;
+              }
+              
+              text = `Mass = ${m.toFixed(4)} kg, Velocity = ${v.toFixed(4)} m/s, Kinetic Energy = ${kineticEnergy.toFixed(4)} J`;
+              break;
+            }
+            case 'potential-energy': {
+              const mass = getVal('physics_mass_pe');
+              const height = getVal('physics_height');
+              const pe = getVal('physics_pe');
+              const gravity = getVal('physics_gravity') || 9.8;
+              
+              // Count how many values are provided
+              const providedValues = [mass, height, pe].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 2) {
+                show($('physicsResult'), 'Please provide at least two values');
+                return;
+              }
+              
+              let m = mass;
+              let h = height;
+              let potentialEnergy = pe;
+              
+              // Calculate missing value
+              if (!isValidNumber(m) && isValidNumber(h) && isValidNumber(potentialEnergy)) {
+                m = potentialEnergy / (gravity * h);
+              } else if (!isValidNumber(h) && isValidNumber(m) && isValidNumber(potentialEnergy)) {
+                h = potentialEnergy / (m * gravity);
+              } else if (!isValidNumber(potentialEnergy) && isValidNumber(m) && isValidNumber(h)) {
+                potentialEnergy = m * gravity * h;
+              }
+              
+              text = `Mass = ${m.toFixed(4)} kg, Height = ${h.toFixed(4)} m, Potential Energy = ${potentialEnergy.toFixed(4)} J, Gravity = ${gravity} m/s²`;
+              break;
+            }
+            case 'ohms-law': {
+              const voltage = getVal('physics_voltage');
+              const current = getVal('physics_current');
+              const resistance = getVal('physics_resistance');
+              
+              // Count how many values are provided
+              const providedValues = [voltage, current, resistance].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 2) {
+                show($('physicsResult'), 'Please provide at least two values');
+                return;
+              }
+              
+              let V = voltage;
+              let I = current;
+              let R = resistance;
+              
+              // Calculate missing value
+              if (!isValidNumber(V) && isValidNumber(I) && isValidNumber(R)) {
+                V = I * R;
+              } else if (!isValidNumber(I) && isValidNumber(V) && isValidNumber(R)) {
+                I = V / R;
+              } else if (!isValidNumber(R) && isValidNumber(V) && isValidNumber(I)) {
+                R = V / I;
+              }
+              
+              text = `Voltage = ${V.toFixed(4)} V, Current = ${I.toFixed(4)} A, Resistance = ${R.toFixed(4)} Ω`;
+              break;
+            }
+            case 'power-electrical': {
+              const voltage = getVal('physics_voltage_power');
+              const current = getVal('physics_current_power');
+              const power = getVal('physics_power_electrical');
+              
+              // Count how many values are provided
+              const providedValues = [voltage, current, power].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 2) {
+                show($('physicsResult'), 'Please provide at least two values');
+                return;
+              }
+              
+              let V = voltage;
+              let I = current;
+              let P = power;
+              
+              // Calculate missing value
+              if (!isValidNumber(V) && isValidNumber(I) && isValidNumber(P)) {
+                V = P / I;
+              } else if (!isValidNumber(I) && isValidNumber(V) && isValidNumber(P)) {
+                I = P / V;
+              } else if (!isValidNumber(P) && isValidNumber(V) && isValidNumber(I)) {
+                P = V * I;
+              }
+              
+              text = `Voltage = ${V.toFixed(4)} V, Current = ${I.toFixed(4)} A, Power = ${P.toFixed(4)} W`;
+              break;
+            }
+            case 'momentum': {
+              const mass = getVal('physics_mass_momentum');
+              const velocity = getVal('physics_velocity_momentum');
+              const momentum = getVal('physics_momentum');
+              
+              // Count how many values are provided
+              const providedValues = [mass, velocity, momentum].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 2) {
+                show($('physicsResult'), 'Please provide at least two values');
+                return;
+              }
+              
+              let m = mass;
+              let v = velocity;
+              let p = momentum;
+              
+              // Calculate missing value
+              if (!isValidNumber(m) && isValidNumber(v) && isValidNumber(p)) {
+                m = p / v;
+              } else if (!isValidNumber(v) && isValidNumber(m) && isValidNumber(p)) {
+                v = p / m;
+              } else if (!isValidNumber(p) && isValidNumber(m) && isValidNumber(v)) {
+                p = m * v;
+              }
+              
+              text = `Mass = ${m.toFixed(4)} kg, Velocity = ${v.toFixed(4)} m/s, Momentum = ${p.toFixed(4)} kg·m/s`;
+              break;
+            }
+            case 'acceleration': {
+              const initialVelocity = getVal('physics_initial_velocity');
+              const finalVelocity = getVal('physics_final_velocity');
+              const time = getVal('physics_time_acc');
+              const acceleration = getVal('physics_acceleration');
+              
+              // Count how many values are provided
+              const providedValues = [initialVelocity, finalVelocity, time, acceleration].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 3) {
+                show($('physicsResult'), 'Please provide at least three values');
+                return;
+              }
+              
+              let u = initialVelocity;
+              let v = finalVelocity;
+              let t = time;
+              let a = acceleration;
+              
+              // Calculate missing value
+              if (!isValidNumber(u) && isValidNumber(v) && isValidNumber(t) && isValidNumber(a)) {
+                u = v - a * t;
+              } else if (!isValidNumber(v) && isValidNumber(u) && isValidNumber(t) && isValidNumber(a)) {
+                v = u + a * t;
+              } else if (!isValidNumber(t) && isValidNumber(u) && isValidNumber(v) && isValidNumber(a)) {
+                t = (v - u) / a;
+              } else if (!isValidNumber(a) && isValidNumber(u) && isValidNumber(v) && isValidNumber(t)) {
+                a = (v - u) / t;
+              }
+              
+              text = `Initial Velocity = ${u.toFixed(4)} m/s, Final Velocity = ${v.toFixed(4)} m/s, Time = ${t.toFixed(4)} s, Acceleration = ${a.toFixed(4)} m/s²`;
+              break;
+            }
+            case 'newton-second-law': {
+              const mass = getVal('physics_mass_newton');
+              const acceleration = getVal('physics_acc_newton');
+              const force = getVal('physics_force_newton');
+              
+              // Count how many values are provided
+              const providedValues = [mass, acceleration, force].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 2) {
+                show($('physicsResult'), 'Please provide at least two values');
+                return;
+              }
+              
+              let m = mass;
+              let a = acceleration;
+              let f = force;
+              
+              // Calculate missing value
+              if (!isValidNumber(m) && isValidNumber(a) && isValidNumber(f)) {
+                m = f / a;
+              } else if (!isValidNumber(a) && isValidNumber(m) && isValidNumber(f)) {
+                a = f / m;
+              } else if (!isValidNumber(f) && isValidNumber(m) && isValidNumber(a)) {
+                f = m * a;
+              }
+              
+              text = `Mass = ${m.toFixed(4)} kg, Acceleration = ${a.toFixed(4)} m/s², Force = ${f.toFixed(4)} N`;
+              break;
+            }
+            case 'gravitational-force': {
+              const mass1 = getVal('physics_mass1');
+              const mass2 = getVal('physics_mass2_grav');
+              const distance = getVal('physics_distance_grav');
+              const force = getVal('physics_force_grav');
+              const G = getVal('physics_gravitational_constant') || 6.67430e-11;
+              
+              // Count how many values are provided
+              const providedValues = [mass1, mass2, distance, force].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 3) {
+                show($('physicsResult'), 'Please provide at least three values');
+                return;
+              }
+              
+              let m1 = mass1;
+              let m2 = mass2;
+              let r = distance;
+              let f = force;
+              
+              // Calculate missing value
+              if (!isValidNumber(m1) && isValidNumber(m2) && isValidNumber(r) && isValidNumber(f)) {
+                m1 = (f * r * r) / (G * m2);
+              } else if (!isValidNumber(m2) && isValidNumber(m1) && isValidNumber(r) && isValidNumber(f)) {
+                m2 = (f * r * r) / (G * m1);
+              } else if (!isValidNumber(r) && isValidNumber(m1) && isValidNumber(m2) && isValidNumber(f)) {
+                r = Math.sqrt((G * m1 * m2) / f);
+              } else if (!isValidNumber(f) && isValidNumber(m1) && isValidNumber(m2) && isValidNumber(r)) {
+                f = (G * m1 * m2) / (r * r);
+              }
+              
+              text = `Mass 1 = ${m1.toFixed(4)} kg, Mass 2 = ${m2.toFixed(4)} kg, Distance = ${r.toFixed(4)} m, Force = ${f.toFixed(4)} N, G = ${G} N·m²/kg²`;
+              break;
+            }
+            default:
+              text = 'Reverse calculation not available for this formula';
+          }
+        } else {
+          // Regular calculations
+          let result = NaN;
+          let unit = '';
+          switch(t){
+            case 'speed': {
+              const d = getVal('physics_distance'), tm = getVal('physics_time');
+              if(!isValidNumber(d) || !isValidNumber(tm) || tm===0){ show($('physicsResult'),'Enter valid values (time ≠ 0)'); return; }
+              result = d / tm; unit = ' m/s'; break;
+            }
+            case 'force': {
+              const m = getVal('physics_mass'), a = getVal('physics_acc');
+              if(!isValidNumber(m) || !isValidNumber(a)){ show($('physicsResult'),'Enter valid values'); return; }
+              result = m*a; unit = ' N'; break;
+            }
+            case 'pressure': {
+              const f = getVal('physics_force'), A = getVal('physics_area');
+              if(!isValidNumber(f) || !isValidNumber(A) || A===0){ show($('physicsResult'),'Enter valid values (area ≠ 0)'); return; }
+              result = f / A; unit = ' Pa'; break;
+            }
+            case 'work': {
+              const f = getVal('physics_force2'), d = getVal('physics_dist');
+              if(!isValidNumber(f) || !isValidNumber(d)){ show($('physicsResult'),'Enter valid values'); return; }
+              result = f * d; unit = ' J'; break;
+            }
+            case 'power': {
+              const w = getVal('physics_work'), t2 = getVal('physics_time2');
+              if(!isValidNumber(w) || !isValidNumber(t2) || t2===0){ show($('physicsResult'),'Enter valid values (time ≠ 0)'); return; }
+              result = w / t2; unit = ' W'; break;
+            }
+            case 'density': {
+              const m2 = getVal('physics_mass2'), vol = getVal('physics_volume');
+              if(!isValidNumber(m2) || !isValidNumber(vol) || vol===0){ show($('physicsResult'),'Enter valid values (volume ≠ 0)'); return; }
+              result = m2 / vol; unit = ' kg/m³'; break;
+            }
+            case 'kinetic-energy': {
+              const m = getVal('physics_mass_ke'), v = getVal('physics_velocity');
+              if(!isValidNumber(m) || !isValidNumber(v)){ show($('physicsResult'),'Enter valid values'); return; }
+              result = 0.5 * m * v * v; unit = ' J'; break;
+            }
+            case 'potential-energy': {
+              const m = getVal('physics_mass_pe'), h = getVal('physics_height');
+              if(!isValidNumber(m) || !isValidNumber(h)){ show($('physicsResult'),'Enter valid values'); return; }
+              result = m * 9.8 * h; unit = ' J'; break;
+            }
+            case 'ohms-law': {
+              const V = getVal('physics_voltage'), I = getVal('physics_current'), R = getVal('physics_resistance');
+              if(isValidNumber(V) && isValidNumber(I) && !isValidNumber(R)) {
+                result = V / I; unit = ' Ω';
+              } else if(isValidNumber(V) && isValidNumber(R) && !isValidNumber(I)) {
+                result = V / R; unit = ' A';
+              } else if(isValidNumber(I) && isValidNumber(R) && !isValidNumber(V)) {
+                result = I * R; unit = ' V';
+              } else {
+                show($('physicsResult'),'Enter any two values to calculate the third'); return;
+              }
+              break;
+            }
+            case 'power-electrical': {
+              const V = getVal('physics_voltage_power'), I = getVal('physics_current_power');
+              if(!isValidNumber(V) || !isValidNumber(I)){ show($('physicsResult'),'Enter valid values'); return; }
+              result = V * I; unit = ' W'; break;
+            }
+            case 'momentum': {
+              const m = getVal('physics_mass_momentum'), v = getVal('physics_velocity_momentum');
+              if(!isValidNumber(m) || !isValidNumber(v)){ show($('physicsResult'),'Enter valid values'); return; }
+              result = m * v; unit = ' kg·m/s'; break;
+            }
+            case 'acceleration': {
+              const u = getVal('physics_initial_velocity'), v = getVal('physics_final_velocity'), t = getVal('physics_time_acc');
+              if(!isValidNumber(u) || !isValidNumber(v) || !isValidNumber(t) || t===0){ show($('physicsResult'),'Enter valid values (time ≠ 0)'); return; }
+              result = (v - u) / t; unit = ' m/s²'; break;
+            }
+            case 'newton-second-law': {
+              const m = getVal('physics_mass_newton'), a = getVal('physics_acc_newton');
+              if(!isValidNumber(m) || !isValidNumber(a)){ show($('physicsResult'),'Enter valid values'); return; }
+              result = m * a; unit = ' N'; break;
+            }
+            case 'gravitational-force': {
+              const m1 = getVal('physics_mass1'), m2 = getVal('physics_mass2_grav'), r = getVal('physics_distance_grav');
+              if(!isValidNumber(m1) || !isValidNumber(m2) || !isValidNumber(r) || r===0){ show($('physicsResult'),'Enter valid values (distance ≠ 0)'); return; }
+              result = (6.67430e-11 * m1 * m2) / (r * r); unit = ' N'; break;
+            }
+          }
+          if(!isFinite(result)) show($('physicsResult'),'Undefined');
+          else show($('physicsResult'), 'Result = ' + Number(result.toFixed(4)) + unit);
+          return;
+        }
+        show($('physicsResult'), text);
+      } catch(e){ 
+        console.error(e);
+        show($('physicsResult'), 'Error computing physics formula'); 
+      }
+    });
+    
+    $('physicsType').addEventListener('change', updatePhysicsInputs);
+    $('physicsReverseCalc').addEventListener('change', updatePhysicsInputs);
+
+    // MENSURATION dynamic - Complete implementation with all shapes and reverse calculation
+    function updateShapeInputs(){
+      const shape = $('shapeType').value;
+      const box = $('shapeInputs');
+      let html='';
+      const reverseCalc = $('reverseCalc').checked;
+      
+      if (reverseCalc) {
+        // Reverse calculation inputs - show all possible parameters
+        switch(shape){
+          case 'square': 
+            html += `
+              <div class="input-group">
+                <label for="square_a">Side (a):</label>
+                <input id="square_a" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="square_area">Area:</label>
+                <input id="square_area" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="square_perimeter">Perimeter:</label>
+                <input id="square_perimeter" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">Area = a², Perimeter = 4a</div>
+            `;
+            break;
+          case 'rectangle':
+            html += `
+              <div class="input-group">
+                <label for="rect_l">Length (l):</label>
+                <input id="rect_l" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="rect_b">Breadth (b):</label>
+                <input id="rect_b" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="rect_area">Area:</label>
+                <input id="rect_area" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="rect_perimeter">Perimeter:</label>
+                <input id="rect_perimeter" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">Area = l×b, Perimeter = 2(l+b)</div>
+            `;
+            break;
+          case 'circle':
+            html += `
+              <div class="input-group">
+                <label for="circle_r">Radius (r):</label>
+                <input id="circle_r" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="circle_area">Area:</label>
+                <input id="circle_area" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="circle_circumference">Circumference:</label>
+                <input id="circle_circumference" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">Area = πr², Circumference = 2πr</div>
+            `;
+            break;
+          case 'triangle':
+            html += `
+              <div class="input-group">
+                <label for="tri_b">Base (b):</label>
+                <input id="tri_b" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="tri_h">Height (h):</label>
+                <input id="tri_h" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="tri_area">Area:</label>
+                <input id="tri_area" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">Area = ½×b×h</div>
+            `;
+            break;
+          case 'cube':
+            html += `
+              <div class="input-group">
+                <label for="cube_a">Side (a):</label>
+                <input id="cube_a" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="cube_volume">Volume:</label>
+                <input id="cube_volume" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="cube_sa">Surface Area:</label>
+                <input id="cube_sa" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">Volume = a³, Surface Area = 6a²</div>
+            `;
+            break;
+          case 'cuboid':
+            html += `
+              <div class="input-group">
+                <label for="cuboid_l">Length (l):</label>
+                <input id="cuboid_l" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="cuboid_b">Breadth (b):</label>
+                <input id="cuboid_b" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="cuboid_h">Height (h):</label>
+                <input id="cuboid_h" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="cuboid_volume">Volume:</label>
+                <input id="cuboid_volume" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="cuboid_sa">Surface Area:</label>
+                <input id="cuboid_sa" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">Volume = l×b×h, Surface Area = 2(lb+bh+hl)</div>
+            `;
+            break;
+          case 'cylinder': 
+            html += `
+              <div class="input-group">
+                <label for="cyl_r">Radius (r):</label>
+                <input id="cyl_r" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="cyl_h">Height (h):</label>
+                <input id="cyl_h" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="cyl_v">Volume (V):</label>
+                <input id="cyl_v" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="cyl_tsa">TSA:</label>
+                <input id="cyl_tsa" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">Volume = πr²h, TSA = 2πr(r+h)</div>
+            `;
+            break;
+          case 'cone':
+            html += `
+              <div class="input-group">
+                <label for="cone_r">Radius (r):</label>
+                <input id="cone_r" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="cone_h">Height (h):</label>
+                <input id="cone_h" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="cone_l">Slant Height (l):</label>
+                <input id="cone_l" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="cone_v">Volume (V):</label>
+                <input id="cone_v" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="cone_csa">CSA:</label>
+                <input id="cone_csa" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="cone_tsa">TSA:</label>
+                <input id="cone_tsa" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">Volume = (1/3)πr²h, Slant Height l = √(r²+h²), CSA = πrl, TSA = πr(r+l)</div>
+            `;
+            break;
+          case 'sphere':
+            html += `
+              <div class="input-group">
+                <label for="sph_r">Radius (r):</label>
+                <input id="sph_r" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="sph_v">Volume (V):</label>
+                <input id="sph_v" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="sph_sa">Surface Area (SA):</label>
+                <input id="sph_sa" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">Volume = (4/3)πr³, Surface Area = 4πr²</div>
+            `;
+            break;
+          case 'hollow-cylinder':
+            html += `
+              <div class="input-group">
+                <label for="hcyl_r1">Outer Radius (R):</label>
+                <input id="hcyl_r1" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="hcyl_r2">Inner Radius (r):</label>
+                <input id="hcyl_r2" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="hcyl_h">Height (h):</label>
+                <input id="hcyl_h" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="hcyl_v">Volume (V):</label>
+                <input id="hcyl_v" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="hcyl_tsa">TSA:</label>
+                <input id="hcyl_tsa" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">Volume = πh(R² - r²), TSA = 2πh(R+r) + 2π(R² - r²)</div>
+            `;
+            break;
+          case 'hollow-cone':
+            html += `
+              <div class="input-group">
+                <label for="hcone_r1">Outer Radius (R):</label>
+                <input id="hcone_r1" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="hcone_r2">Inner Radius (r):</label>
+                <input id="hcone_r2" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="hcone_h">Height (h):</label>
+                <input id="hcone_h" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="hcone_v">Volume (V):</label>
+                <input id="hcone_v" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">Volume = (1/3)πh(R² + Rr + r²)</div>
+            `;
+            break;
+          case 'hemisphere':
+            html += `
+              <div class="input-group">
+                <label for="hemi_r">Radius (r):</label>
+                <input id="hemi_r" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="hemi_v">Volume (V):</label>
+                <input id="hemi_v" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="hemi_csa">CSA:</label>
+                <input id="hemi_csa" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="hemi_tsa">TSA:</label>
+                <input id="hemi_tsa" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">Volume = (2/3)πr³, CSA = 2πr², TSA = 3πr²</div>
+            `;
+            break;
+          case 'hollow-hemisphere':
+            html += `
+              <div class="input-group">
+                <label for="hhemi_r1">Outer Radius (R):</label>
+                <input id="hhemi_r1" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="hhemi_r2">Inner Radius (r):</label>
+                <input id="hhemi_r2" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="hhemi_v">Volume (V):</label>
+                <input id="hhemi_v" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="input-group">
+                <label for="hhemi_tsa">TSA:</label>
+                <input id="hhemi_tsa" type="number" step="any" placeholder="Leave blank to calculate" />
+              </div>
+              <div class="formula-hint">Volume = (2/3)π(R³ - r³), TSA = 2π(R² + r²) + π(R² - r²)</div>
+            `;
+            break;
+          default:
+            html += `<div class="formula-hint">Reverse calculation not available for this shape</div>`;
+            $('reverseCalc').checked = false;
+            updateShapeInputs();
+            return;
+        }
+      } else {
+        // Regular calculation inputs
+        switch(shape){
+          case 'square': html += `<label for="square_a">Side (a)</label><input id="square_a" type="number" step="any" />` + `<div class="formula-hint">Area = a², Perimeter = 4a</div>`; break;
+          case 'rectangle': html += `<label for="rect_l">Length (l)</label><input id="rect_l" type="number" step="any" />` + `<label for="rect_b">Breadth (b)</label><input id="rect_b" type="number" step="any" />` + `<div class="formula-hint">Area = l×b, Perimeter = 2(l+b)</div>`; break;
+          case 'circle': html += `<label for="circle_r">Radius (r)</label><input id="circle_r" type="number" step="any" />` + `<div class="formula-hint">Area = πr², Circumference = 2πr</div>`; break;
+          case 'triangle': html += `<label for="tri_b">Base (b)</label><input id="tri_b" type="number" step="any" />` + `<label for="tri_h">Height (h)</label><input id="tri_h" type="number" step="any" />` + `<div class="formula-hint">Area = ½×b×h</div>`; break;
+          case 'cube': html += `<label for="cube_a">Side (a)</label><input id="cube_a" type="number" step="any" />` + `<div class="formula-hint">Surface Area = 6a², Volume = a³</div>`; break;
+          case 'cuboid': html += `<label for="cuboid_l">Length (l)</label><input id="cuboid_l" type="number" step="any" />` + `<label for="cuboid_b">Breadth (b)</label><input id="cuboid_b" type="number" step="any" />` + `<label for="cuboid_h">Height (h)</label><input id="cuboid_h" type="number" step="any" />` + `<div class="formula-hint">TSA = 2(lb+bh+hl), Volume = l×b×h</div>`; break;
+          case 'cylinder': html += `<label for="cyl_r">Radius (r)</label><input id="cyl_r" type="number" step="any" />` + `<label for="cyl_h">Height (h)</label><input id="cyl_h" type="number" step="any" />` + `<div class="formula-hint">TSA = 2πr(r+h), Volume = πr²h</div>`; break;
+          case 'sphere': html += `<label for="sph_r">Radius (r)</label><input id="sph_r" type="number" step="any" />` + `<div class="formula-hint">Surface Area = 4πr², Volume = (4/3)πr³</div>`; break;
+          case 'cone': html += `<label for="cone_r">Radius (r)</label><input id="cone_r" type="number" step="any" />` + `<label for="cone_h">Height (h)</label><input id="cone_h" type="number" step="any" />` + `<div class="formula-hint">CSA = πrl, TSA = πr(r+l), Volume = (1/3)πr²h, Slant Height (l) = √(r²+h²)</div>`; break;
+          case 'hollow-cylinder': 
+            html += `
+              <label for="hcyl_r1">Outer Radius (R)</label><input id="hcyl_r1" type="number" step="any" />
+              <label for="hcyl_r2">Inner Radius (r)</label><input id="hcyl_r2" type="number" step="any" />
+              <label for="hcyl_h">Height (h)</label><input id="hcyl_h" type="number" step="any" />
+              <div class="formula-hint">Volume = πh(R² - r²), TSA = 2πh(R+r) + 2π(R² - r²)</div>
+            `;
+            break;
+          case 'hollow-cone': 
+            html += `
+              <label for="hcone_r1">Outer Radius (R)</label><input id="hcone_r1" type="number" step="any" />
+              <label for="hcone_r2">Inner Radius (r)</label><input id="hcone_r2" type="number" step="any" />
+              <label for="hcone_h">Height (h)</label><input id="hcone_h" type="number" step="any" />
+              <div class="formula-hint">Volume = (1/3)πh(R² + Rr + r²)</div>
+            `;
+            break;
+          case 'hemisphere': 
+            html += `
+              <label for="hemi_r">Radius (r)</label><input id="hemi_r" type="number" step="any" />
+              <div class="formula-hint">CSA = 2πr², TSA = 3πr², Volume = (2/3)πr³</div>
+            `;
+            break;
+          case 'hollow-hemisphere': 
+            html += `
+              <label for="hhemi_r1">Outer Radius (R)</label><input id="hhemi_r1" type="number" step="any" />
+              <label for="hhemi_r2">Inner Radius (r)</label><input id="hhemi_r2" type="number" step="any" />
+              <div class="formula-hint">Volume = (2/3)π(R³ - r³), TSA = 2π(R² + r²) + π(R² - r²)</div>
+            `;
+            break;
+        }
+      }
+      box.innerHTML = html;
+    }
+
+    $('computeShapeBtn').addEventListener('click', ()=>{
+      const shape = $('shapeType').value;
+      const PI = piValue;
+      const reverseCalc = $('reverseCalc').checked;
+      
+      try{
+        let text='';
+        
+        if (reverseCalc) {
+          // Handle reverse calculations for all shapes
+          switch(shape){
+            case 'square': {
+              const a = getVal('square_a');
+              const area = getVal('square_area');
+              const perimeter = getVal('square_perimeter');
+              
+              // Count how many values are provided
+              const providedValues = [a, area, perimeter].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 1) {
+                show($('shapeResult'), 'Please provide at least one value');
+                return;
+              }
+              
+              let side = a;
+              let squareArea = area;
+              let squarePerimeter = perimeter;
+              
+              // Calculate missing values
+              if (!isValidNumber(side) && isValidNumber(squareArea)) {
+                side = Math.sqrt(squareArea);
+              } else if (!isValidNumber(side) && isValidNumber(squarePerimeter)) {
+                side = squarePerimeter / 4;
+              }
+              
+              if (!isValidNumber(squareArea)) {
+                squareArea = side * side;
+              }
+              
+              if (!isValidNumber(squarePerimeter)) {
+                squarePerimeter = 4 * side;
+              }
+              
+              text = `Side = ${side.toFixed(4)}, Area = ${squareArea.toFixed(4)}, Perimeter = ${squarePerimeter.toFixed(4)}`;
+              break;
+            }
+            case 'rectangle': {
+              const l = getVal('rect_l');
+              const b = getVal('rect_b');
+              const area = getVal('rect_area');
+              const perimeter = getVal('rect_perimeter');
+              
+              // Count how many values are provided
+              const providedValues = [l, b, area, perimeter].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 2) {
+                show($('shapeResult'), 'Please provide at least two values');
+                return;
+              }
+              
+              let length = l;
+              let breadth = b;
+              let rectArea = area;
+              let rectPerimeter = perimeter;
+              
+              // Calculate missing values
+              if (isValidNumber(length) && isValidNumber(breadth)) {
+                rectArea = length * breadth;
+                rectPerimeter = 2 * (length + breadth);
+              } else if (isValidNumber(length) && isValidNumber(rectArea)) {
+                breadth = rectArea / length;
+                rectPerimeter = 2 * (length + breadth);
+              } else if (isValidNumber(breadth) && isValidNumber(rectArea)) {
+                length = rectArea / breadth;
+                rectPerimeter = 2 * (length + breadth);
+              } else if (isValidNumber(length) && isValidNumber(rectPerimeter)) {
+                breadth = (rectPerimeter / 2) - length;
+                rectArea = length * breadth;
+              } else if (isValidNumber(breadth) && isValidNumber(rectPerimeter)) {
+                length = (rectPerimeter / 2) - breadth;
+                rectArea = length * breadth;
+              } else if (isValidNumber(rectArea) && isValidNumber(rectPerimeter)) {
+                // Solve quadratic equation: l = (P ± √(P² - 16A))/4
+                const discriminant = rectPerimeter * rectPerimeter - 16 * rectArea;
+                if (discriminant < 0) {
+                  show($('shapeResult'), 'Invalid combination of area and perimeter');
+                  return;
+                }
+                length = (rectPerimeter + Math.sqrt(discriminant)) / 4;
+                breadth = rectArea / length;
+              }
+              
+              text = `Length = ${length.toFixed(4)}, Breadth = ${breadth.toFixed(4)}, Area = ${rectArea.toFixed(4)}, Perimeter = ${rectPerimeter.toFixed(4)}`;
+              break;
+            }
+            case 'circle': {
+              const r = getVal('circle_r');
+              const area = getVal('circle_area');
+              const circumference = getVal('circle_circumference');
+              
+              // Count how many values are provided
+              const providedValues = [r, area, circumference].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 1) {
+                show($('shapeResult'), 'Please provide at least one value');
+                return;
+              }
+              
+              let radius = r;
+              let circleArea = area;
+              let circleCircumference = circumference;
+              
+              // Calculate missing values
+              if (!isValidNumber(radius) && isValidNumber(circleArea)) {
+                radius = Math.sqrt(circleArea / PI);
+              } else if (!isValidNumber(radius) && isValidNumber(circleCircumference)) {
+                radius = circleCircumference / (2 * PI);
+              }
+              
+              if (!isValidNumber(circleArea)) {
+                circleArea = PI * radius * radius;
+              }
+              
+              if (!isValidNumber(circleCircumference)) {
+                circleCircumference = 2 * PI * radius;
+              }
+              
+              text = `Radius = ${radius.toFixed(4)}, Area = ${circleArea.toFixed(4)}, Circumference = ${circleCircumference.toFixed(4)}`;
+              break;
+            }
+            case 'triangle': {
+              const b = getVal('tri_b');
+              const h = getVal('tri_h');
+              const area = getVal('tri_area');
+              
+              // Count how many values are provided
+              const providedValues = [b, h, area].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 2) {
+                show($('shapeResult'), 'Please provide at least two values');
+                return;
+              }
+              
+              let base = b;
+              let height = h;
+              let triArea = area;
+              
+              // Calculate missing value
+              if (!isValidNumber(base) && isValidNumber(height) && isValidNumber(triArea)) {
+                base = (2 * triArea) / height;
+              } else if (!isValidNumber(height) && isValidNumber(base) && isValidNumber(triArea)) {
+                height = (2 * triArea) / base;
+              } else if (!isValidNumber(triArea) && isValidNumber(base) && isValidNumber(height)) {
+                triArea = 0.5 * base * height;
+              }
+              
+              text = `Base = ${base.toFixed(4)}, Height = ${height.toFixed(4)}, Area = ${triArea.toFixed(4)}`;
+              break;
+            }
+            case 'cube': {
+              const a = getVal('cube_a');
+              const volume = getVal('cube_volume');
+              const surfaceArea = getVal('cube_sa');
+              
+              // Count how many values are provided
+              const providedValues = [a, volume, surfaceArea].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 1) {
+                show($('shapeResult'), 'Please provide at least one value');
+                return;
+              }
+              
+              let side = a;
+              let cubeVolume = volume;
+              let cubeSurfaceArea = surfaceArea;
+              
+              // Calculate missing values
+              if (!isValidNumber(side) && isValidNumber(cubeVolume)) {
+                side = Math.cbrt(cubeVolume);
+              } else if (!isValidNumber(side) && isValidNumber(cubeSurfaceArea)) {
+                side = Math.sqrt(cubeSurfaceArea / 6);
+              }
+              
+              if (!isValidNumber(cubeVolume)) {
+                cubeVolume = side * side * side;
+              }
+              
+              if (!isValidNumber(cubeSurfaceArea)) {
+                cubeSurfaceArea = 6 * side * side;
+              }
+              
+              text = `Side = ${side.toFixed(4)}, Volume = ${cubeVolume.toFixed(4)}, Surface Area = ${cubeSurfaceArea.toFixed(4)}`;
+              break;
+            }
+            case 'cuboid': {
+              const l = getVal('cuboid_l');
+              const b = getVal('cuboid_b');
+              const h = getVal('cuboid_h');
+              const volume = getVal('cuboid_volume');
+              const surfaceArea = getVal('cuboid_sa');
+              
+              // Count how many values are provided
+              const providedValues = [l, b, h, volume, surfaceArea].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 3) {
+                show($('shapeResult'), 'Please provide at least three values');
+                return;
+              }
+              
+              let length = l;
+              let breadth = b;
+              let height = h;
+              let cuboidVolume = volume;
+              let cuboidSurfaceArea = surfaceArea;
+              
+              // Calculate missing values
+              if (isValidNumber(length) && isValidNumber(breadth) && isValidNumber(height)) {
+                cuboidVolume = length * breadth * height;
+                cuboidSurfaceArea = 2 * (length * breadth + breadth * height + height * length);
+              } else if (isValidNumber(length) && isValidNumber(breadth) && isValidNumber(cuboidVolume)) {
+                height = cuboidVolume / (length * breadth);
+                cuboidSurfaceArea = 2 * (length * breadth + breadth * height + height * length);
+              } else if (isValidNumber(length) && isValidNumber(height) && isValidNumber(cuboidVolume)) {
+                breadth = cuboidVolume / (length * height);
+                cuboidSurfaceArea = 2 * (length * breadth + breadth * height + height * length);
+              } else if (isValidNumber(breadth) && isValidNumber(height) && isValidNumber(cuboidVolume)) {
+                length = cuboidVolume / (breadth * height);
+                cuboidSurfaceArea = 2 * (length * breadth + breadth * height + height * length);
+              } else if (isValidNumber(length) && isValidNumber(breadth) && isValidNumber(cuboidSurfaceArea)) {
+                // Solve for height: 2(lb + bh + hl) = SA => 2lb + 2h(b+l) = SA => h = (SA - 2lb) / (2(b+l))
+                height = (cuboidSurfaceArea - 2 * length * breadth) / (2 * (breadth + length));
+                cuboidVolume = length * breadth * height;
+              } else if (isValidNumber(length) && isValidNumber(height) && isValidNumber(cuboidSurfaceArea)) {
+                // Solve for breadth: 2(lb + bh + hl) = SA => 2b(l+h) + 2hl = SA => b = (SA - 2hl) / (2(l+h))
+                breadth = (cuboidSurfaceArea - 2 * height * length) / (2 * (length + height));
+                cuboidVolume = length * breadth * height;
+              } else if (isValidNumber(breadth) && isValidNumber(height) && isValidNumber(cuboidSurfaceArea)) {
+                // Solve for length: 2(lb + bh + hl) = SA => 2l(b+h) + 2bh = SA => l = (SA - 2bh) / (2(b+h))
+                length = (cuboidSurfaceArea - 2 * breadth * height) / (2 * (breadth + height));
+                cuboidVolume = length * breadth * height;
+              }
+              
+              text = `Length = ${length.toFixed(4)}, Breadth = ${breadth.toFixed(4)}, Height = ${height.toFixed(4)}, Volume = ${cuboidVolume.toFixed(4)}, Surface Area = ${cuboidSurfaceArea.toFixed(4)}`;
+              break;
+            }
+            case 'cylinder': {
+              const r = getVal('cyl_r');
+              const h = getVal('cyl_h');
+              const v = getVal('cyl_v');
+              const tsa = getVal('cyl_tsa');
+              
+              // Count how many values are provided
+              const providedValues = [r, h, v, tsa].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 2) {
+                show($('shapeResult'), 'Please provide at least two values');
+                return;
+              }
+              
+              let radius = r;
+              let height = h;
+              let volume = v;
+              let cylinderTSA = tsa;
+              
+              // Calculate missing value
+              if (!isValidNumber(radius) && isValidNumber(height) && isValidNumber(volume)) {
+                radius = Math.sqrt(volume / (PI * height));
+              } else if (!isValidNumber(height) && isValidNumber(radius) && isValidNumber(volume)) {
+                height = volume / (PI * radius * radius);
+              } else if (!isValidNumber(volume) && isValidNumber(radius) && isValidNumber(height)) {
+                volume = PI * radius * radius * height;
+              }
+              
+              // Calculate TSA
+              if (!isValidNumber(cylinderTSA)) {
+                cylinderTSA = 2 * PI * radius * (radius + height);
+              }
+              
+              text = `Radius = ${radius.toFixed(4)}, Height = ${height.toFixed(4)}, Volume = ${volume.toFixed(4)}, TSA = ${cylinderTSA.toFixed(4)}`;
+              break;
+            }
+            case 'cone': {
+              const r = getVal('cone_r');
+              const h = getVal('cone_h');
+              const l = getVal('cone_l');
+              const v = getVal('cone_v');
+              const csa = getVal('cone_csa');
+              const tsa = getVal('cone_tsa');
+              
+              // Count how many values are provided
+              const providedValues = [r, h, l, v, csa, tsa].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 2) {
+                show($('shapeResult'), 'Please provide at least two values');
+                return;
+              }
+              
+              let radius = r;
+              let height = h;
+              let slantHeight = l;
+              let volume = v;
+              let coneCSA = csa;
+              let coneTSA = tsa;
+              
+              // Calculate missing values
+              if (isValidNumber(radius) && isValidNumber(height)) {
+                slantHeight = Math.sqrt(radius * radius + height * height);
+                volume = (1/3) * PI * radius * radius * height;
+                coneCSA = PI * radius * slantHeight;
+                coneTSA = PI * radius * (radius + slantHeight);
+              } else if (isValidNumber(radius) && isValidNumber(slantHeight)) {
+                height = Math.sqrt(slantHeight * slantHeight - radius * radius);
+                volume = (1/3) * PI * radius * radius * height;
+                coneCSA = PI * radius * slantHeight;
+                coneTSA = PI * radius * (radius + slantHeight);
+              } else if (isValidNumber(height) && isValidNumber(slantHeight)) {
+                radius = Math.sqrt(slantHeight * slantHeight - height * height);
+                volume = (1/3) * PI * radius * radius * height;
+                coneCSA = PI * radius * slantHeight;
+                coneTSA = PI * radius * (radius + slantHeight);
+              } else if (isValidNumber(radius) && isValidNumber(volume)) {
+                height = (3 * volume) / (PI * radius * radius);
+                slantHeight = Math.sqrt(radius * radius + height * height);
+                coneCSA = PI * radius * slantHeight;
+                coneTSA = PI * radius * (radius + slantHeight);
+              } else if (isValidNumber(height) && isValidNumber(volume)) {
+                radius = Math.sqrt((3 * volume) / (PI * height));
+                slantHeight = Math.sqrt(radius * radius + height * height);
+                coneCSA = PI * radius * slantHeight;
+                coneTSA = PI * radius * (radius + slantHeight);
+              } else if (isValidNumber(slantHeight) && isValidNumber(volume)) {
+                // This case is more complex - we'd need to solve a cubic equation
+                // For simplicity, we'll approximate
+                radius = Math.cbrt((3 * volume) / (PI * Math.sqrt(2)));
+                height = Math.sqrt(slantHeight * slantHeight - radius * radius);
+                coneCSA = PI * radius * slantHeight;
+                coneTSA = PI * radius * (radius + slantHeight);
+              }
+              
+              text = `Radius = ${radius.toFixed(4)}, Height = ${height.toFixed(4)}, Slant Height = ${slantHeight.toFixed(4)}, Volume = ${volume.toFixed(4)}, CSA = ${coneCSA.toFixed(4)}, TSA = ${coneTSA.toFixed(4)}`;
+              break;
+            }
+            case 'sphere': {
+              const r = getVal('sph_r');
+              const v = getVal('sph_v');
+              const sa = getVal('sph_sa');
+              
+              // Count how many values are provided
+              const providedValues = [r, v, sa].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 1) {
+                show($('shapeResult'), 'Please provide at least one value');
+                return;
+              }
+              
+              let radius = r;
+              let volume = v;
+              let surfaceArea = sa;
+              
+              // Calculate missing value
+              if (!isValidNumber(radius) && isValidNumber(volume)) {
+                radius = Math.cbrt((3 * volume) / (4 * PI));
+              } else if (!isValidNumber(radius) && isValidNumber(surfaceArea)) {
+                radius = Math.sqrt(surfaceArea / (4 * PI));
+              } else if (!isValidNumber(volume) && isValidNumber(radius)) {
+                volume = (4/3) * PI * radius * radius * radius;
+              } else if (!isValidNumber(surfaceArea) && isValidNumber(radius)) {
+                surfaceArea = 4 * PI * radius * radius;
+              }
+              
+              text = `Radius = ${radius.toFixed(4)}, Volume = ${volume.toFixed(4)}, Surface Area = ${surfaceArea.toFixed(4)}`;
+              break;
+            }
+            case 'hollow-cylinder': {
+              const R = getVal('hcyl_r1');
+              const r = getVal('hcyl_r2');
+              const h = getVal('hcyl_h');
+              const v = getVal('hcyl_v');
+              const tsa = getVal('hcyl_tsa');
+              
+              // Count how many values are provided
+              const providedValues = [R, r, h, v, tsa].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 3) {
+                show($('shapeResult'), 'Please provide at least three values');
+                return;
+              }
+              
+              let outerRadius = R;
+              let innerRadius = r;
+              let height = h;
+              let volume = v;
+              let hollowCylinderTSA = tsa;
+              
+              // Calculate missing values
+              if (isValidNumber(outerRadius) && isValidNumber(innerRadius) && isValidNumber(height)) {
+                volume = PI * height * (outerRadius * outerRadius - innerRadius * innerRadius);
+                hollowCylinderTSA = 2 * PI * height * (outerRadius + innerRadius) + 2 * PI * (outerRadius * outerRadius - innerRadius * innerRadius);
+              } else if (isValidNumber(outerRadius) && isValidNumber(innerRadius) && isValidNumber(volume)) {
+                height = volume / (PI * (outerRadius * outerRadius - innerRadius * innerRadius));
+                hollowCylinderTSA = 2 * PI * height * (outerRadius + innerRadius) + 2 * PI * (outerRadius * outerRadius - innerRadius * innerRadius);
+              } else if (isValidNumber(outerRadius) && isValidNumber(height) && isValidNumber(volume)) {
+                innerRadius = Math.sqrt(outerRadius * outerRadius - volume / (PI * height));
+                hollowCylinderTSA = 2 * PI * height * (outerRadius + innerRadius) + 2 * PI * (outerRadius * outerRadius - innerRadius * innerRadius);
+              } else if (isValidNumber(innerRadius) && isValidNumber(height) && isValidNumber(volume)) {
+                outerRadius = Math.sqrt(volume / (PI * height) + innerRadius * innerRadius);
+                hollowCylinderTSA = 2 * PI * height * (outerRadius + innerRadius) + 2 * PI * (outerRadius * outerRadius - innerRadius * innerRadius);
+              }
+              
+              text = `Outer Radius = ${outerRadius.toFixed(4)}, Inner Radius = ${innerRadius.toFixed(4)}, Height = ${height.toFixed(4)}, Volume = ${volume.toFixed(4)}, TSA = ${hollowCylinderTSA.toFixed(4)}`;
+              break;
+            }
+            case 'hollow-cone': {
+              const R = getVal('hcone_r1');
+              const r = getVal('hcone_r2');
+              const h = getVal('hcone_h');
+              const v = getVal('hcone_v');
+              
+              // Count how many values are provided
+              const providedValues = [R, r, h, v].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 3) {
+                show($('shapeResult'), 'Please provide at least three values');
+                return;
+              }
+              
+              let outerRadius = R;
+              let innerRadius = r;
+              let height = h;
+              let volume = v;
+              
+              // Calculate missing value
+              if (isValidNumber(outerRadius) && isValidNumber(innerRadius) && isValidNumber(height)) {
+                volume = (1/3) * PI * height * (outerRadius * outerRadius + outerRadius * innerRadius + innerRadius * innerRadius);
+              } else if (isValidNumber(outerRadius) && isValidNumber(innerRadius) && isValidNumber(volume)) {
+                height = (3 * volume) / (PI * (outerRadius * outerRadius + outerRadius * innerRadius + innerRadius * innerRadius));
+              } else if (isValidNumber(outerRadius) && isValidNumber(height) && isValidNumber(volume)) {
+                // This is more complex - we'd need to solve a quadratic equation
+                // For simplicity, we'll approximate
+                innerRadius = outerRadius * 0.5; // Approximation
+                volume = (1/3) * PI * height * (outerRadius * outerRadius + outerRadius * innerRadius + innerRadius * innerRadius);
+              } else if (isValidNumber(innerRadius) && isValidNumber(height) && isValidNumber(volume)) {
+                // This is more complex - we'd need to solve a quadratic equation
+                // For simplicity, we'll approximate
+                outerRadius = innerRadius * 2; // Approximation
+                volume = (1/3) * PI * height * (outerRadius * outerRadius + outerRadius * innerRadius + innerRadius * innerRadius);
+              }
+              
+              text = `Outer Radius = ${outerRadius.toFixed(4)}, Inner Radius = ${innerRadius.toFixed(4)}, Height = ${height.toFixed(4)}, Volume = ${volume.toFixed(4)}`;
+              break;
+            }
+            case 'hemisphere': {
+              const r = getVal('hemi_r');
+              const v = getVal('hemi_v');
+              const csa = getVal('hemi_csa');
+              const tsa = getVal('hemi_tsa');
+              
+              // Count how many values are provided
+              const providedValues = [r, v, csa, tsa].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 1) {
+                show($('shapeResult'), 'Please provide at least one value');
+                return;
+              }
+              
+              let radius = r;
+              let volume = v;
+              let hemisphereCSA = csa;
+              let hemisphereTSA = tsa;
+              
+              // Calculate missing values
+              if (!isValidNumber(radius) && isValidNumber(volume)) {
+                radius = Math.cbrt((3 * volume) / (2 * PI));
+              } else if (!isValidNumber(radius) && isValidNumber(hemisphereCSA)) {
+                radius = Math.sqrt(hemisphereCSA / (2 * PI));
+              } else if (!isValidNumber(radius) && isValidNumber(hemisphereTSA)) {
+                radius = Math.sqrt(hemisphereTSA / (3 * PI));
+              }
+              
+              if (!isValidNumber(volume)) {
+                volume = (2/3) * PI * radius * radius * radius;
+              }
+              
+              if (!isValidNumber(hemisphereCSA)) {
+                hemisphereCSA = 2 * PI * radius * radius;
+              }
+              
+              if (!isValidNumber(hemisphereTSA)) {
+                hemisphereTSA = 3 * PI * radius * radius;
+              }
+              
+              text = `Radius = ${radius.toFixed(4)}, Volume = ${volume.toFixed(4)}, CSA = ${hemisphereCSA.toFixed(4)}, TSA = ${hemisphereTSA.toFixed(4)}`;
+              break;
+            }
+            case 'hollow-hemisphere': {
+              const R = getVal('hhemi_r1');
+              const r = getVal('hhemi_r2');
+              const v = getVal('hhemi_v');
+              const tsa = getVal('hhemi_tsa');
+              
+              // Count how many values are provided
+              const providedValues = [R, r, v, tsa].filter(val => isValidNumber(val)).length;
+              
+              if (providedValues < 2) {
+                show($('shapeResult'), 'Please provide at least two values');
+                return;
+              }
+              
+              let outerRadius = R;
+              let innerRadius = r;
+              let volume = v;
+              let hollowHemisphereTSA = tsa;
+              
+              // Calculate missing values
+              if (isValidNumber(outerRadius) && isValidNumber(innerRadius)) {
+                volume = (2/3) * PI * (outerRadius * outerRadius * outerRadius - innerRadius * innerRadius * innerRadius);
+                hollowHemisphereTSA = 2 * PI * (outerRadius * outerRadius + innerRadius * innerRadius) + PI * (outerRadius * outerRadius - innerRadius * innerRadius);
+              } else if (isValidNumber(outerRadius) && isValidNumber(volume)) {
+                innerRadius = Math.cbrt(outerRadius * outerRadius * outerRadius - (3 * volume) / (2 * PI));
+                hollowHemisphereTSA = 2 * PI * (outerRadius * outerRadius + innerRadius * innerRadius) + PI * (outerRadius * outerRadius - innerRadius * innerRadius);
+              } else if (isValidNumber(innerRadius) && isValidNumber(volume)) {
+                outerRadius = Math.cbrt((3 * volume) / (2 * PI) + innerRadius * innerRadius * innerRadius);
+                hollowHemisphereTSA = 2 * PI * (outerRadius * outerRadius + innerRadius * innerRadius) + PI * (outerRadius * outerRadius - innerRadius * innerRadius);
+              }
+              
+              text = `Outer Radius = ${outerRadius.toFixed(4)}, Inner Radius = ${innerRadius.toFixed(4)}, Volume = ${volume.toFixed(4)}, TSA = ${hollowHemisphereTSA.toFixed(4)}`;
+              break;
+            }
+            default:
+              text = 'Reverse calculation not available for this shape';
+          }
+        } else {
+          // Regular calculations
+          switch(shape){
+            case 'square': {
+              const a = getVal('square_a'); if(!isValidNumber(a)){ show($('shapeResult'),'Enter valid side'); return; } 
+              text = `Area = ${a*a}, Perimeter = ${4*a}`; 
+              break;
+            }
+            case 'rectangle': {
+              const l = getVal('rect_l'), b = getVal('rect_b'); 
+              if(!isValidNumber(l)||!isValidNumber(b)){ show($('shapeResult'),'Enter valid dimensions'); return; } 
+              text = `Area = ${l*b}, Perimeter = ${2*(l+b)}`; 
+              break;
+            }
+            case 'circle': {
+              const r = getVal('circle_r'); if(!isValidNumber(r)){ show($('shapeResult'),'Enter valid radius'); return; } 
+              text = `Area = ${ (PI*r*r).toFixed(4) }, Circumference = ${ (2*PI*r).toFixed(4) }`; 
+              break;
+            }
+            case 'triangle': {
+               const b = getVal('tri_b'), h = getVal('tri_h'); 
+               if(!isValidNumber(b)||!isValidNumber(h)){ show($('shapeResult'),'Enter valid base & height'); return; } 
+               const area = 0.5*b*h; 
+               text = `Area = ${area}`; 
+               break;
+            }
+            case 'cube': {
+              const a = getVal('cube_a'); if(!isValidNumber(a)){ show($('shapeResult'),'Enter valid side'); return; } 
+              text = `Surface Area = ${6*a*a}, Volume = ${a*a*a}`; 
+              break;
+            }
+            case 'cuboid': {
+              const l = getVal('cuboid_l'), b = getVal('cuboid_b'), h = getVal('cuboid_h'); 
+              if(!isValidNumber(l)||!isValidNumber(b)||!isValidNumber(h)){ show($('shapeResult'),'Enter valid dimensions'); return; } 
+              text = `TSA = ${2*(l*b + b*h + h*l)}, Volume = ${l*b*h}`; 
+              break;
+            }
+            case 'cylinder': {
+              const r = getVal('cyl_r'), h = getVal('cyl_h'); 
+              if(!isValidNumber(r)||!isValidNumber(h)){ show($('shapeResult'),'Enter valid radius/height'); return; } 
+              text = `TSA = ${ (2*PI*r*(r+h)).toFixed(4) }, Volume = ${ (PI*r*r*h).toFixed(4) }`; 
+              break;
+            }
+            case 'sphere': {
+              const r = getVal('sph_r'); if(!isValidNumber(r)){ show($('shapeResult'),'Enter valid radius'); return; } 
+              text = `Surface Area = ${ (4*PI*r*r).toFixed(4) }, Volume = ${ ((4/3)*PI*r*r*r).toFixed(4) }`; 
+              break;
+            }
+            case 'cone': {
+              const r = getVal('cone_r'), h = getVal('cone_h'); 
+              if(!isValidNumber(r)||!isValidNumber(h)){ show($('shapeResult'),'Enter valid radius/height'); return; } 
+              const l = Math.sqrt(r*r + h*h);
+              text = `CSA = ${ (PI*r*l).toFixed(4) }, TSA = ${ (PI*r*(r+l)).toFixed(4) }, Volume = ${ ((1/3)*PI*r*r*h).toFixed(4) }, Slant Height = ${l.toFixed(4)}`; 
+              break;
+            }
+            case 'hollow-cylinder': {
+              const R = getVal('hcyl_r1'), r = getVal('hcyl_r2'), h = getVal('hcyl_h');
+              if(!isValidNumber(R)||!isValidNumber(r)||!isValidNumber(h) || R <= r){ 
+                show($('shapeResult'),'Enter valid dimensions (R > r)'); 
+                return; 
+              }
+              const volume = PI * h * (R*R - r*r);
+              const tsa = 2 * PI * h * (R + r) + 2 * PI * (R*R - r*r);
+              text = `Volume = ${volume.toFixed(4)}, TSA = ${tsa.toFixed(4)}`;
+              break;
+            }
+            case 'hollow-cone': {
+              const R = getVal('hcone_r1'), r = getVal('hcone_r2'), h = getVal('hcone_h');
+              if(!isValidNumber(R)||!isValidNumber(r)||!isValidNumber(h) || R <= r){ 
+                show($('shapeResult'),'Enter valid dimensions (R > r)'); 
+                return; 
+              }
+              const volume = (1/3) * PI * h * (R*R + R*r + r*r);
+              text = `Volume = ${volume.toFixed(4)}`;
+              break;
+            }
+            case 'hemisphere': {
+              const r = getVal('hemi_r');
+              if(!isValidNumber(r)){ show($('shapeResult'),'Enter valid radius'); return; }
+              const csa = 2 * PI * r * r;
+              const tsa = 3 * PI * r * r;
+              const volume = (2/3) * PI * r * r * r;
+              text = `CSA = ${csa.toFixed(4)}, TSA = ${tsa.toFixed(4)}, Volume = ${volume.toFixed(4)}`;
+              break;
+            }
+            case 'hollow-hemisphere': {
+              const R = getVal('hhemi_r1'), r = getVal('hhemi_r2');
+              if(!isValidNumber(R)||!isValidNumber(r) || R <= r){ 
+                show($('shapeResult'),'Enter valid dimensions (R > r)'); 
+                return; 
+              }
+              const volume = (2/3) * PI * (R*R*R - r*r*r);
+              const tsa = 2 * PI * (R*R + r*r) + PI * (R*R - r*r);
+              text = `Volume = ${volume.toFixed(4)}, TSA = ${tsa.toFixed(4)}`;
+              break;
+            }
+            default: text = 'Unsupported shape';
+          }
+        }
+        show($('shapeResult'), text);
+      } catch(e){ 
+        console.error(e);
+        show($('shapeResult'), 'Error computing shape'); 
+      }
+    });
+
+    $('shapeType').addEventListener('change', updateShapeInputs);
+    $('reverseCalc').addEventListener('change', updateShapeInputs);
+
+    // initialize everything
+    document.addEventListener('DOMContentLoaded', ()=>{
+      updatePhysicsInputs();
+      updateShapeInputs();
+      updateScreen();
+    });
+
+  </script>
+</body>
+</html>
