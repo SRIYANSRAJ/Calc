@@ -263,7 +263,7 @@
   <div class="container" data-author="Sriyans Raj">
     <div class="topbar">
       <div class="greet">
-        <div class="name" id="greeting">Hi, Sriyans</div>
+        <div class="name" id="greeting">Hi, User</div>
         <div class="time" id="clock">—:—</div>
       </div>
       <div class="meta">
@@ -450,9 +450,9 @@
 
       const hour = now.getHours();
       let greet = 'Hi, Sriyans';
-      if(hour >= 5 && hour < 12) greet = 'Good morning, Devashish';
-      else if(hour >= 12 && hour < 17) greet = 'Good afternoon, Devashish';
-      else if(hour >= 17 && hour < 21) greet = 'Good evening, Devashish';
+      if(hour >= 5 && hour < 12) greet = 'Good morning, Sir';
+      else if(hour >= 12 && hour < 17) greet = 'Good afternoon, Sir';
+      else if(hour >= 17 && hour < 21) greet = 'Good evening, Sir';
       // else it remains 'Hi, Sriyans' for late night
       $('greeting').innerText = greet;
     }
